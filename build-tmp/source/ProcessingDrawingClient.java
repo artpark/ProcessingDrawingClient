@@ -3,8 +3,6 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
-import processing.net.*; 
-
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -16,43 +14,40 @@ import java.io.IOException;
 
 public class ProcessingDrawingClient extends PApplet {
 
-// 2B: Shared drawing canvas (Client)
+float yoff = 0.0f;        // 2nd dimension of perlin noise
 
- 
-
-Client c; 
-String input;
-int data[]; 
-
-public void setup() { 
-   
-  background(204);
-  stroke(0);
-  frameRate(5); // Slow it down a little
-  // Connect to the server’s IP address and port­
-  c = new Client(this, "127.0.0.1", 12345); // Replace with your server’s IP and port
-} 
-
-public void draw() {         
-  if (mousePressed == true) {
-    // Draw our line
-    stroke(255);
-    line(pmouseX, pmouseY, mouseX, mouseY); 
-    // Send mouse coords to other person
-    c.write(pmouseX + " " + pmouseY + " " + mouseX + " " + mouseY + "\n");
-  }
-
-  // Receive data from server
-  if (c.available() > 0) { 
-    input = c.readString(); 
-    input = input.substring(0,input.indexOf("\n"));  // Only up to the newline
-    data = PApplet.parseInt(split(input, ' '));  // Split values into an array
-    // Draw line using received coords
-    stroke(0);
-    line(data[0], data[1], data[2], data[3]); 
-  } 
+public void setup() {
+  
 }
-  public void settings() {  size(450, 255); }
+
+public void draw() {
+  background(51);
+
+  fill(255);
+  // We are going to draw a polygon out of the wave points
+  beginShape(); 
+  
+  float xoff = 0;       // Option #1: 2D Noise
+  // float xoff = yoff; // Option #2: 1D Noise
+  
+  // Iterate over horizontal pixels
+  for (float x = 0; x <= width; x += 10) {
+    // Calculate a y value according to noise, map to 
+    float y = map(noise(xoff, yoff), 0, 1, 200,300); // Option #1: 2D Noise
+    // float y = map(noise(xoff), 0, 1, 200,300);    // Option #2: 1D Noise
+    
+    // Set the vertex
+    vertex(x, y); 
+    // Increment x dimension for noise
+    xoff += 0.05f;
+  }
+  // increment y dimension for noise
+  yoff += 0.01f;
+  vertex(width, height);
+  vertex(0, height);
+  endShape(CLOSE);
+}
+  public void settings() {  size(640, 360); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "ProcessingDrawingClient" };
     if (passedArgs != null) {
