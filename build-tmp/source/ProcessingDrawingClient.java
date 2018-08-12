@@ -16,42 +16,41 @@ import java.io.IOException;
 
 public class ProcessingDrawingClient extends PApplet {
 
-// 2A: Shared drawing canvas (Server)
+// 2B: Shared drawing canvas (Client)
 
+ 
 
-
-Server s; 
-Client c;
+Client c; 
 String input;
-int data[];
+int data[]; 
 
 public void setup() { 
-  
+   
   background(204);
   stroke(0);
   frameRate(5); // Slow it down a little
-  s = new Server(this, 12345);  // Start a simple server on a port
-  println(this);
+  // Connect to the server’s IP address and port­
+  c = new Client(this, "127.0.0.1", 12345); // Replace with your server’s IP and port
 } 
-public void draw() { 
+
+public void draw() {         
   if (mousePressed == true) {
     // Draw our line
     stroke(255);
     line(pmouseX, pmouseY, mouseX, mouseY); 
     // Send mouse coords to other person
-    s.write(pmouseX + " " + pmouseY + " " + mouseX + " " + mouseY + "\n");
+    c.write(pmouseX + " " + pmouseY + " " + mouseX + " " + mouseY + "\n");
   }
-  
-  // Receive data from client
-  c = s.available();
-  if (c != null) {
+
+  // Receive data from server
+  if (c.available() > 0) { 
     input = c.readString(); 
-    input = input.substring(0, input.indexOf("\n"));  // Only up to the newline
+    input = input.substring(0,input.indexOf("\n"));  // Only up to the newline
     data = PApplet.parseInt(split(input, ' '));  // Split values into an array
     // Draw line using received coords
     stroke(0);
     line(data[0], data[1], data[2], data[3]); 
-  }
+  } 
 }
   public void settings() {  size(450, 255); }
   static public void main(String[] passedArgs) {
